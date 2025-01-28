@@ -6,60 +6,57 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-@Scope("prototype")
+@Scope("singleton")
 public class LibraryImpl implements Library{
 
-    private final int indexOfTitle = 0;
-    private final int indexOfAuthor = 1;
-    private final int indexOfPrice = 2;
     private String libName;
 
-    ArrayList< ArrayList<String> > booklst = new ArrayList<>();
-    ArrayList<String> noteBook;
+    List<Book> booklst = new ArrayList<>();
 
-    public LibraryImpl(String name){
-        this.libName = name;
+
+    @Override
+    public void setLibName(String name) {
+        this.libName=name;
+    }
+
+    public String getLibName(){
+        return libName;
     }
 
     @Override
     public void addBook(Book book) {
-        noteBook = new ArrayList<>();
-
-        noteBook.add(book.getTitle());
-        noteBook.add(book.getAuthor().getName()) ;
-        noteBook.add(book.getPrice());
-
-        booklst.add(noteBook);
+        booklst.add(book);
     }
 
     @Override
-    public void displayBooks(){
+    public void displayAllBooks(){
         System.out.println("Books in \""+libName+"\" : ");
-        for(ArrayList<String> one : booklst){
-            System.out.println(one);
+        for(Book book1 : booklst){
+            System.out.println(book1);
         }
     }
 
     @Override
-    public void removeBook(String title) {
+    public void removeBookByTitle(String title) {
 
-        ArrayList<String> noteBook = findBook(title);
+        Book book1 = findBookObjByTitle(title);
 
-        if( noteBook == null){
-            System.out.println("-------Book Not Found!!-------");
+        if( book1 != null){
+            booklst.remove(book1 );
+            System.out.println("-------Book Removed-------");
+            displayAllBooks();
         }
         else{
-            booklst.remove( noteBook );
-            System.out.println("-------Book Removed-------");
-            displayBooks();
+            System.out.println("-------Book Not Exsist!!-------");
         }
     }
 
     @Override
     public void isBookExists(String title) {
-        if( findBook(title) == null ) {
+        if(  findBookObjByTitle(title) == null ) {
             System.out.println("No, \""+title+ "\" is't exists.");
             return;
         }
@@ -74,57 +71,47 @@ public class LibraryImpl implements Library{
     }
 
     @Override
-    public void updatePrice(String title , String newPrice) {
-        ArrayList<String> noteBook = findBook(title);
-        if( noteBook == null ){
+    public void updateBookPriceByTitle(String title , int newPrice) {
+        Book book1 = findBookObjByTitle(title);
+        if( book1 == null ){
             System.out.println("-------Book Not Found!!-------");
         }
         else{
-            noteBook.set(indexOfPrice , newPrice);
+            book1.setPrice(newPrice);
             System.out.println("\n-------Price of \""+title+"\" Updated-------");
-            displayBooks();
+            printBookDetailsByTitle(title);
         }
     }
 
     @Override
-    public void getBookDetails(String title) {
+    public void printBookDetailsByTitle(String title) {
 
-        ArrayList<String> book = findBook(title);
-
-        if( book == null ){
-            System.out.println("-------Book Not Found!!-------");
+        Book book1 = findBookObjByTitle(title);
+        if( book1 != null ){
+            System.out.println(book1);
         }
         else{
-            System.out.println("\nDetails of book:");
-            System.out.println("Title : "+book.get(indexOfTitle));
-            System.out.println("Author : "+book.get(indexOfAuthor));
-            System.out.println("Price : "+book.get(indexOfPrice));
+            System.out.println("-------Book Not Found!!-------");
         }
     }
 
     @Override
-    public void authorsAllBooks(String authorName) {
-        List<String> authorBooks = new ArrayList<>();
+    public void getBooksByAuthorName(String authorName) {
+        List<Book> booksOfAuthor = booklst.stream()
+                .filter(book1 -> book1.getAuthor().getName().equals(authorName))
+                .collect(Collectors.toList());
 
-        for(ArrayList<String> book : booklst ){
-            if( book.get(indexOfAuthor).equals(authorName) ){
-                authorBooks.add( book.get(indexOfTitle) );
-            }
-        }
-        System.out.println("\nAll books By \""+authorName+ "\" are : \n");
-        for(int i=0 ; i< authorBooks.size() ; i++){
-            System.out.println(i+1 +" "+ authorBooks.get(i) );
-        }
-    }
+        System.out.println(booksOfAuthor);
+     }
+
+
 
     @Override
-    public ArrayList<String> findBook(String title){
-        for(ArrayList<String> book : booklst ){
-            if( book.get(indexOfTitle).equals(title) ){
-                return book;
-            }
-        }
-        return null;
+    public Book findBookObjByTitle(String title){
+        return booklst.stream()
+                .filter(book1 -> book1.getTitle().equals(title))
+                .findFirst()
+                .orElse(null);
     }
 
     @PostConstruct
@@ -137,5 +124,4 @@ public class LibraryImpl implements Library{
         System.out.println("Destroying ....");
         booklst.clear();
     }
-
 }

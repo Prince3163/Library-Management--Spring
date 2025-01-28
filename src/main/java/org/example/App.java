@@ -11,19 +11,20 @@ public class App
 {
     public static void main( String[] args )
     {
-        int actionNumber;
         String title;
-        String price;
-        String name;
+        String authorName;
+
+        int actionNumber;
+        int price;
+
         LibraryImpl lib;
         Author author;
         Book book;
 
         ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
 
-        lib= context.getBean(LibraryImpl.class, "Ahmedabad_Lib");
-        author= context.getBean(Author.class);
-        book = context.getBean(Book.class);
+        lib= context.getBean(LibraryImpl.class);
+        lib.setLibName("Ahmedabad_Lib");
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("Welcome to the Library Management :)");
@@ -53,18 +54,16 @@ public class App
             switch (actionNumber){
                 case 1: {
                     System.out.print("Enter book Title : ");
-                    //scanner.nextLine();
                     title = scanner.nextLine().trim();
-                    book.setTitle(title);
 
                     System.out.print("Enter Author name : ");
-                    name = scanner.nextLine().trim();
-                    author.setName(name);
-                    book.setAuthor(author);
+                    authorName = scanner.nextLine().trim();
+                    author= context.getBean(Author.class,authorName);
 
                     System.out.print("Enter book Price in numbers only : ");
-                    price = scanner.next().trim();
-                    book.setPrice(price);
+                    price = scanner.nextInt();
+
+                    book = context.getBean(Book.class,author,title,price);
 
                     lib.addBook(book);
                     break;
@@ -72,21 +71,19 @@ public class App
 
                 case 2: {
                     System.out.println("\n==> Collection of our library: ");
-                    lib.displayBooks();
+                    lib.displayAllBooks();
                     break;
                 }
 
                 case 3: {
                     System.out.print("Enter title of book to remove : ");
-                    //scanner.nextLine();
                     title = scanner.nextLine().trim();
-                    lib.removeBook(title);
+                    lib.removeBookByTitle(title);
                     break;
                 }
 
                 case 4: {
                     System.out.print("Enter title of book to check is exsists : ");
-                    //scanner.nextLine();
                     title = scanner.nextLine().trim();
                     lib.isBookExists(title);
                     break;
@@ -99,29 +96,26 @@ public class App
 
                 case 6: {
                     System.out.print("Enter book Title for Update Price : ");
-                    //scanner.nextLine();
                     title = scanner.nextLine().trim();
 
                     System.out.print("Enter new Price in numbers : ");
-                    price = scanner.next().trim();
+                    price = scanner.nextInt();
 
-                    lib.updatePrice(title,price);
+                    lib.updateBookPriceByTitle(title,price);
                     break;
                 }
 
                 case 7: {
                     System.out.print("Enter title of book to get details : ");
-                    //scanner.nextLine();
                     title = scanner.nextLine().trim();
-                    lib.getBookDetails(title);
+                    lib.printBookDetailsByTitle(title);
                     break;
                 }
 
                 case 8: {
                     System.out.print("Enter author name and get all books title : ");
-                    //scanner.nextLine();
-                    name = scanner.nextLine().trim();
-                    lib.authorsAllBooks(name);
+                    authorName = scanner.nextLine().trim();
+                    lib.getBooksByAuthorName(authorName);
                     break;
                 }
 
@@ -133,6 +127,7 @@ public class App
                 default:{
                     System.out.println("\nInvalid action number!!\n" +
                             "Try with only above mentioned please...");
+                    break;
                 }
             }
         }
